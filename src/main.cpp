@@ -8,6 +8,7 @@
 ----------------------------------------------------------------------------- */
 #include "main.h"
 #include <stdio.h>
+#include "LoraMesher.h"
 
 /* ----------------------------------------------------------------------------
  * defines
@@ -24,6 +25,7 @@ DISPLAY_MODEL *u8g2 = nullptr;
 /*
  * static variables
  */
+static LoraMesher& radio = LoraMesher::getInstance();
 
 void setup()
 {
@@ -80,4 +82,18 @@ void initBoard(void)
             u8g2->println("Waiting to receive data.");
         } while (u8g2->nextPage());
     }
+}
+
+void setupLoraMesher() {
+    // Example on how to change the module. See LoraMesherConfig to see all the configurable parameters.
+    LoraMesher::LoraMesherConfig config;
+    config.module = LoraMesher::LoraModules::SX1262_MOD;
+
+    //Init the loramesher with a processReceivedPackets function
+    radio.begin(config);
+
+    //Start LoRaMesher
+    radio.start();
+
+    Serial.println("Lora initialized");
 }
