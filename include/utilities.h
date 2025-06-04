@@ -27,9 +27,6 @@
 #define BAT_ADC_PIN                 1
 #define BUTTON_PIN                  0
 
-// #define HAS_SDCARD
-#define HAS_DISPLAY
-
 #else
 #error "For the first use, please define the board version and model in <utilities. h>"
 #endif
