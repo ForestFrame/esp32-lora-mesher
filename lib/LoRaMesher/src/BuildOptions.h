@@ -52,16 +52,16 @@ extern const char* LM_VERSION;
 // 433E6 for Asia
 // 866E6 for Europe
 // 915E6 for North America
-#define LM_BAND 869.900F
+#define LM_BAND 433.00F
 #define LM_BANDWIDTH 125.0
-#define LM_LORASF 7U
+#define LM_LORASF 9U
 #define LM_CODING_RATE 7U
 #define LM_PREAMBLE_LENGTH 8U
-#define LM_POWER 6
+#define LM_POWER 22
 #define LM_DUTY_CYCLE 100
 
 //Syncronization Word that identifies the mesh network
-#define LM_SYNC_WORD 19U
+#define LM_SYNC_WORD 0x12
 
 // Comment this line if you want to remove the crc for each packet
 #define LM_ADDCRC_PAYLOAD
@@ -92,7 +92,7 @@ extern const char* LM_VERSION;
 #define MAX_PRIORITY 40
 
 //Definition Times in seconds
-#define HELLO_PACKETS_DELAY 120
+#define HELLO_PACKETS_DELAY 2
 #define DEFAULT_TIMEOUT HELLO_PACKETS_DELAY*5
 #define MIN_TIMEOUT 20
 

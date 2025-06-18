@@ -7,7 +7,6 @@
  * include
 ----------------------------------------------------------------------------- */
 #include "main.h"
-#include <stdio.h>
 #include "LoraMesher.h"
 
 /* ----------------------------------------------------------------------------
@@ -25,24 +24,28 @@ DISPLAY_MODEL *u8g2 = nullptr;
 /*
  * static variables
  */
-static LoraMesher& radio = LoraMesher::getInstance();
+static uint32_t dataCounter = 0;
+static LoraMesher &radio = LoraMesher::getInstance();
+static dataPacket *helloPacket = new dataPacket;
 
 void setup()
 {
     initBoard();
+    setupLoraMesher();
 }
 
 void loop()
 {
-    // put your main code here, to run repeatedly:
+    helloPacket->counter = dataCounter++;
+    // Create packet and send it.
+    radio.createPacketAndSend(BROADCAST_ADDR, helloPacket, 1);
 }
 
 void initBoard(void)
 {
     Serial.begin(115200);
-    LOGI("Board inits.");
+    ESP_LOGI("INIT", "Board inits.");
 
-    SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
     Wire.begin(I2C_SDA, I2C_SCL);
 
     initPMU();
@@ -53,7 +56,7 @@ void initBoard(void)
     Wire.beginTransmission(0x3C);
     if (Wire.endTransmission() == 0)
     {
-        LOGI("Start OLED.");
+        ESP_LOGI("INIT", "Start OLED.");
         u8g2 = new DISPLAY_MODEL(U8G2_R0, U8X8_PIN_NONE);
         u8g2->begin();
         u8g2->clearBuffer();
@@ -71,29 +74,21 @@ void initBoard(void)
         u8g2->setFont(u8g2_font_fur11_tf);
         delay(3000);
     }
-
-    if (u8g2)
-    {
-        u8g2->clearBuffer();
-        u8g2->firstPage();
-        do
-        {
-            u8g2->setCursor(0, 16);
-            u8g2->println("Waiting to receive data.");
-        } while (u8g2->nextPage());
-    }
 }
 
-void setupLoraMesher() {
+void setupLoraMesher(void)
+{
     // Example on how to change the module. See LoraMesherConfig to see all the configurable parameters.
     LoraMesher::LoraMesherConfig config;
-    config.module = LoraMesher::LoraModules::SX1262_MOD;
+    SPIClass *mySPI = new SPIClass(HSPI);
+    mySPI->begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
+    config.spi = mySPI;
 
-    //Init the loramesher with a processReceivedPackets function
+    // Init the loramesher with a processReceivedPackets function
     radio.begin(config);
 
-    //Start LoRaMesher
+    // Start LoRaMesher
     radio.start();
 
-    Serial.println("Lora initialized");
+    ESP_LOGW("INIT", "Lora initialized.");
 }

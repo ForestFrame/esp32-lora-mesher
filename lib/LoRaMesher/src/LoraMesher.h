@@ -1,6 +1,8 @@
 #ifndef _LORAMESHER_H
 #define _LORAMESHER_H
 
+#include "../include/utilities.h"
+
 // LoRa libraries
 #include "RadioLib.h"
 
@@ -54,13 +56,13 @@ public:
      */
     struct LoraMesherConfig {
         // LoRa pins
-        uint8_t loraCs = 0; // LoRa chip select pin
+        uint8_t loraCs = RADIO_CS_PIN; // LoRa chip select pin
         uint8_t loraIrq = 0; // LoRa IRQ pin
-        uint8_t loraRst = 0; // LoRa reset pin
-        uint8_t loraIo1 = 0; // LoRa DIO1 pin
+        uint8_t loraRst = RADIO_RST_PIN; // LoRa reset pin
+        uint8_t loraIo1 = RADIO_DIO1_PIN; // LoRa DIO1 pin
 
         // LoRa configuration
-        LoraModules module = LoraModules::SX1276_MOD; // Define the module to be used. Allowed values are in the BuildOptions.h file. By default is SX1276_MOD
+        LoraModules module = LoraModules::SX1268_MOD; // Define the module to be used. Allowed values are in the BuildOptions.h file. By default is SX1276_MOD
         float freq = LM_BAND; // Carrier frequency in MHz. Allowed values range from 137.0 MHz to 1020.0 MHz.
         float bw = LM_BANDWIDTH; // LoRa bandwidth in kHz. Allowed values are 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250 and 500 kHz.
         uint8_t sf = LM_LORASF; // LoRa spreading factor. Allowed values range from 6 to 12.
@@ -69,7 +71,7 @@ public:
         int8_t power = LM_POWER; // Transmission output power in dBm. Allowed values range from 2 to 17 dBm.
         uint16_t preambleLength = LM_PREAMBLE_LENGTH; // Length of LoRa transmission preamble in symbols. The actual preamble length is 4.25 symbols longer than the set number. Allowed values range from 6 to 65535.
         // MAX packet size per packet in bytes. It could be changed between 13 and 255 bytes. Recommended 100 or less bytes.
-        // If exceed it will be automatically separated through multiple packets 
+        // If exceed it will be automatically separated through multiple packets
         // In bytes (226 bytes [UE max allowed with SF7 and 125khz])
         // MAX payload size for hello packets = LM_MAX_PACKET_SIZE - 7 bytes of header
         // MAX payload size for data packets = LM_MAX_PACKET_SIZE - 7 bytes of header - 2 bytes of via

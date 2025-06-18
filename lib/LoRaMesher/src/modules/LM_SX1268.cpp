@@ -4,7 +4,7 @@
 LM_SX1268::LM_SX1268(uint8_t loraCs, uint8_t loraIrq, uint8_t loraRst, uint8_t loraIo1, SPIClass* spi) {
     module = new SX1268(new Module(loraCs, loraIrq, loraRst, loraIo1, *spi));
 }
-#else 
+#else
 LM_SX1268::LM_SX1268(Module* mod) {
     module=new SX1268(mod);
 }

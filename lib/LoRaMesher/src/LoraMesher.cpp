@@ -476,7 +476,7 @@ bool LoraMesher::sendPacket(Packet<uint8_t>* p) {
     // Print the packet to be sent
     printHeaderPacket(p, "send");
 
-    //Blocking transmit, it is necessary due to deleting the packet after sending it. 
+    //Blocking transmit, it is necessary due to deleting the packet after sending it.
     int resT = radio->transmit(reinterpret_cast<uint8_t*>(p), p->packetSize);
 
     //Start receiving again after sending a packet

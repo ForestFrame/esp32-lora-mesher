@@ -27,7 +27,8 @@ int16_t LM_SX1280::scanChannel() {
 }
 
 int16_t LM_SX1280::startChannelScan() {
-    return module->startChannelScan();
+    // startChannelScan方法不存在
+    // return module->startChannelScan();
 }
 
 int16_t LM_SX1280::standby() {
@@ -67,7 +68,8 @@ uint32_t LM_SX1280::getTimeOnAir(size_t length) {
 }
 
 void LM_SX1280::setDioActionForReceiving(void (*action)()) {
-    module->setPacketReceivedAction(action);
+    // setPacketReceivedAction方法不存在
+    // module->setPacketReceivedAction(action);
 }
 
 void LM_SX1280::setDioActionForReceivingTimeout(void(*action)()) {

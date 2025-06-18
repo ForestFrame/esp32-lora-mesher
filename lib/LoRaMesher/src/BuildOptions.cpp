@@ -9,7 +9,7 @@ size_t getFreeHeap() {
     return ESP.getFreeHeap();
 }
 
-#else 
+#else
 
 #include <esp_timer.h>
 

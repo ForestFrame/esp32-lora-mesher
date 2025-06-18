@@ -24,7 +24,7 @@ int16_t SX126x::begin(uint8_t cr, uint8_t syncWord, uint16_t preambleLength, flo
   this->mod->SPIstatusCommand = RADIOLIB_SX126X_CMD_GET_STATUS;
   this->mod->SPIstreamType = true;
   this->mod->SPIparseStatusCb = SPIparseStatus;
-  
+
   // try to find the SX126x chip
   if(!SX126x::findChip(this->chipType)) {
     RADIOLIB_DEBUG_PRINTLN("No SX126x found!");
@@ -106,7 +106,7 @@ int16_t SX126x::beginFSK(float br, float freqDev, float rxBw, uint16_t preambleL
   this->mod->SPIstatusCommand = RADIOLIB_SX126X_CMD_GET_STATUS;
   this->mod->SPIstreamType = true;
   this->mod->SPIparseStatusCb = SPIparseStatus;
-  
+
   // try to find the SX126x chip
   if(!SX126x::findChip(this->chipType)) {
     RADIOLIB_DEBUG_PRINTLN("No SX126x found!");
