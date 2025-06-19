@@ -2,6 +2,7 @@
 #define _LORAMESHER_H
 
 #include "../include/utilities.h"
+#include "../include/TestDataGenerator.h"
 
 // LoRa libraries
 #include "RadioLib.h"

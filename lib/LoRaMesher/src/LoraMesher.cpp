@@ -339,6 +339,10 @@ void LoraMesher::initializeSchedulers() {
         ESP_LOGE(LM_TAG, "Queue Manager Task creation gave error: %d", res);
     }
 
+    // 初始化并启动测试数据生成器  
+    TestDataGenerator::getInstance().begin();  
+    TestDataGenerator::getInstance().start();  
+
     vTaskDelay(5000 / portTICK_PERIOD_MS);
 }
 

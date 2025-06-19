@@ -24,9 +24,7 @@ DISPLAY_MODEL *u8g2 = nullptr;
 /*
  * static variables
  */
-static uint32_t dataCounter = 0;
 static LoraMesher &radio = LoraMesher::getInstance();
-static dataPacket *helloPacket = new dataPacket;
 
 void setup()
 {
@@ -36,9 +34,7 @@ void setup()
 
 void loop()
 {
-    helloPacket->counter = dataCounter++;
-    // Create packet and send it.
-    radio.createPacketAndSend(BROADCAST_ADDR, helloPacket, 1);
+    uint32_t packetCount = TestDataGenerator::getInstance().getGeneratedPacketCount();
 }
 
 void initBoard(void)
