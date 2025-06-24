@@ -1,6 +1,7 @@
 #include "TestDataGenerator.h"  
   
 TestDataGenerator* TestDataGenerator::instance = nullptr;  
+TaskHandle_t TestDataGenerator::TestDataTask_TaskHandle = nullptr;
   
 TestDataGenerator& TestDataGenerator::getInstance() {  
     if (instance == nullptr) {  
@@ -10,18 +11,18 @@ TestDataGenerator& TestDataGenerator::getInstance() {
 }  
   
 void TestDataGenerator::begin() {  
-    ESP_LOGI(LM_TAG, "Initializing Test Data Generator");  
+    ESP_LOGI("testDataGenerator", "Initializing Test Data Generator");  
     testPacketCounter = 0;  
     isRunning = false;  
 }  
   
 void TestDataGenerator::start() {  
     if (isRunning) {  
-        ESP_LOGW(LM_TAG, "Test Data Generator already running");  
+        SAFE_ESP_LOGW("testDataGenerator", "Test Data Generator already running");  
         return;  
     }  
       
-    ESP_LOGI(LM_TAG, "Starting Test Data Generator Task");  
+    SAFE_ESP_LOGI("testDataGenerator", "Starting Test Data Generator Task");  
       
     int res = xTaskCreate(  
         [](void* o) { static_cast<TestDataGenerator*>(o)->testDataGenerationTask(); },  
@@ -29,13 +30,13 @@ void TestDataGenerator::start() {
         4096,  
         this,  
         1, // 低优先级，避免影响网络通信  
-        &TestDataTask_Handle);  
+        &TestDataTask_TaskHandle);  
           
     if (res != pdPASS) {  
-        ESP_LOGE(LM_TAG, "Test Data Generator Task creation failed: %d", res);  
+        SAFE_ESP_LOGE("testDataGenerator", "Test Data Generator Task creation failed: %d", res);  
     } else {  
         isRunning = true;  
-        ESP_LOGI(LM_TAG, "Test Data Generator Task created successfully");  
+        SAFE_ESP_LOGI("testDataGenerator", "Test Data Generator Task created successfully");  
     }  
 }  
   
@@ -44,18 +45,18 @@ void TestDataGenerator::stop() {
         return;  
     }  
       
-    ESP_LOGI(LM_TAG, "Stopping Test Data Generator Task");  
+    ESP_LOGI("testDataGenerator", "Stopping Test Data Generator Task");  
       
-    if (TestDataTask_Handle != nullptr) {  
-        vTaskDelete(TestDataTask_Handle);  
-        TestDataTask_Handle = nullptr;  
+    if (TestDataTask_TaskHandle != nullptr) {  
+        vTaskDelete(TestDataTask_TaskHandle);  
+        TestDataTask_TaskHandle = nullptr;  
     }  
       
     isRunning = false;  
 }  
   
 void TestDataGenerator::testDataGenerationTask() {  
-    ESP_LOGV(LM_TAG, "Test Data Generation Task started");  
+    SAFE_ESP_LOGV("testDataGenerator", "Test Data Generation Task started");  
       
     // 任务启动时暂停，等待系统完全初始化  
     vTaskSuspend(NULL);  
@@ -64,7 +65,7 @@ void TestDataGenerator::testDataGenerationTask() {
     vTaskDelay(5000 / portTICK_PERIOD_MS);  
       
     for (;;) {  
-        ESP_LOGV(LM_TAG, "Test Data Task - Stack unused: %d, Free heap: %d",   
+        SAFE_ESP_LOGV("testDataGenerator", "Test Data Task - Stack unused: %d, Free heap: %d",   
                  uxTaskGetStackHighWaterMark(NULL), getFreeHeap());  
           
         // 生成测试数据包  
@@ -90,7 +91,7 @@ void TestDataGenerator::generateTestPacket() {
         testData.payload[i] = (uint8_t)(testData.sequenceNumber + i) & 0xFF;  
     }  
       
-    ESP_LOGI(LM_TAG, "Generating test packet #%d from node %X",   
+    SAFE_ESP_LOGI("testDataGenerator", "Generating test packet #%d from node %X",   
              testData.sequenceNumber, testData.nodeId);  
       
     // 获取路由表中的节点数量  
@@ -105,26 +106,27 @@ void TestDataGenerator::generateTestPacket() {
         if (testData.sequenceNumber % 3 == 0) {  
             // 每三个包发送一次广播  
             destination = BROADCAST_ADDR;  
-            ESP_LOGI(LM_TAG, "Sending test packet to BROADCAST");  
+            SAFE_ESP_LOGI("testDataGenerator", "Sending test packet to BROADCAST");  
         } else {  
             // 选择一个随机节点  
             size_t targetIndex = testData.sequenceNumber % numOfNodes;  
             destination = nodes[targetIndex].address;  
-            ESP_LOGI(LM_TAG, "Sending test packet to node %X", destination);  
+            SAFE_ESP_LOGI("testDataGenerator", "Sending test packet to node %X", destination);  
         }  
           
         // 使用LoRaMesher的createPacketAndSend方法发送数据  
         // 这会自动将数据包加入到ToSendPackets队列中  
-        loraMesher.createPacketAndSend(destination, &testData, sizeof(TestData));  
+        loraMesher.createPacketAndSend(destination, &testData, 1);  
           
         // 清理节点数组  
         delete[] nodes;  
           
-        ESP_LOGI(LM_TAG, "Test packet #%d queued for transmission", testData.sequenceNumber);  
+        SAFE_ESP_LOGI("testDataGenerator", "Test packet #%d queued for transmission", testData.sequenceNumber);  
     } else {  
-        ESP_LOGW(LM_TAG, "No nodes in routing table, sending broadcast test packet");  
+        SAFE_ESP_LOGW("testDataGenerator", "No nodes in routing table, sending broadcast test packet");  
           
         // 如果没有其他节点，发送广播包  
-        loraMesher.createPacketAndSend(BROADCAST_ADDR, &testData, sizeof(TestData));  
+        loraMesher.createPacketAndSend(BROADCAST_ADDR, &testData, 1); 
+        SAFE_ESP_LOGV("testDataGenerator", "Test data size %d", sizeof(TestData));
     }  
 }

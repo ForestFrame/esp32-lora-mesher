@@ -5,9 +5,9 @@
 #include "BuildOptions.h"
 
 class TestDataGenerator {
-private:
+public:
     static TestDataGenerator* instance;
-    TaskHandle_t TestDataTask_Handle = nullptr;
+    static TaskHandle_t TestDataTask_TaskHandle;
     bool isRunning = false;
     uint32_t testPacketCounter = 0;
 
@@ -20,7 +20,6 @@ private:
         uint8_t payload[32]; // 测试负载
     };
 
-public:
     static TestDataGenerator& getInstance();
 
     /**
@@ -55,6 +54,6 @@ public:
 };
 
 // 测试数据生成间隔（秒）
-#define TEST_DATA_INTERVAL 30
+#define TEST_DATA_INTERVAL 2
 
 #endif

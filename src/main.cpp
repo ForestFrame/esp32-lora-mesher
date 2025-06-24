@@ -34,7 +34,6 @@ void setup()
 
 void loop()
 {
-    uint32_t packetCount = TestDataGenerator::getInstance().getGeneratedPacketCount();
 }
 
 void initBoard(void)
@@ -74,17 +73,17 @@ void initBoard(void)
 
 void setupLoraMesher(void)
 {
-    // Example on how to change the module. See LoraMesherConfig to see all the configurable parameters.
-    LoraMesher::LoraMesherConfig config;
+    // 1. 安装GPIO中断服务
+    //	gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+
+    // 2. 初始化SPI
     SPIClass *mySPI = new SPIClass(HSPI);
     mySPI->begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
+
+    // 3. 配置LoRaMesher
+    LoraMesher::LoraMesherConfig config;
     config.spi = mySPI;
 
-    // Init the loramesher with a processReceivedPackets function
     radio.begin(config);
-
-    // Start LoRaMesher
     radio.start();
-
-    ESP_LOGW("INIT", "Lora initialized.");
 }

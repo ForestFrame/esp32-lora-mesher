@@ -2,6 +2,7 @@
 #define _LORAMESHER_PACKET_FACTORY_H
 
 #include "entities/packets/Packet.h"
+#include "../include/LogManager.h"
 
 class PacketFactory {
 public:
@@ -37,12 +38,12 @@ public:
         // Determine actual packet size, respecting maximum limits
         size_t actualPacketSize = requestedPacketSize;
         if (actualPacketSize > maxPacketSize) {
-            ESP_LOGW(LM_TAG, "Packet size (%u) exceeds maximum (%u bytes), truncating",
+            SAFE_ESP_LOGW(LM_TAG, "Packet size (%u) exceeds maximum (%u bytes), truncating",
                 requestedPacketSize, maxPacketSize);
             actualPacketSize = maxPacketSize;
         }
 
-        ESP_LOGV(LM_TAG, "Creating packet with %u bytes", actualPacketSize);
+        SAFE_ESP_LOGD(LM_TAG, "Creating packet with %u bytes", actualPacketSize);
 
         // Allocate memory for the packet
         T* packet = static_cast<T*>(pvPortMalloc(actualPacketSize));
@@ -60,7 +61,7 @@ public:
         if (payload != nullptr && copySize > 0) {
             // Log warning if payload was truncated
             if (payloadSize > copySize) {
-                ESP_LOGW(LM_TAG, "Payload truncated from %u to %u bytes to fit max packet size",
+                SAFE_ESP_LOGW(LM_TAG, "Payload truncated from %u to %u bytes to fit max packet size",
                     payloadSize, copySize);
             }
 

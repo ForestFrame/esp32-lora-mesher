@@ -3,6 +3,7 @@
 
 #include "../include/utilities.h"
 #include "../include/TestDataGenerator.h"
+#include "../include/LogManager.h"
 
 // LoRa libraries
 #include "RadioLib.h"
@@ -58,9 +59,9 @@ public:
     struct LoraMesherConfig {
         // LoRa pins
         uint8_t loraCs = RADIO_CS_PIN; // LoRa chip select pin
-        uint8_t loraIrq = 0; // LoRa IRQ pin
+        uint8_t loraIrq = RADIO_DIO1_PIN; // LoRa irq pin
         uint8_t loraRst = RADIO_RST_PIN; // LoRa reset pin
-        uint8_t loraIo1 = RADIO_DIO1_PIN; // LoRa DIO1 pin
+        uint8_t loraIo1 = RADIO_BUSY_PIN; // LoRa busy pin
 
         // LoRa configuration
         LoraModules module = LoraModules::SX1268_MOD; // Define the module to be used. Allowed values are in the BuildOptions.h file. By default is SX1276_MOD
@@ -250,7 +251,7 @@ public:
         //Get the size of the payload in bytes
         size_t payloadSizeInBytes = payloadSize * sizeof(T);
 
-        ESP_LOGV(LM_TAG, "Creating a packet for send with %d bytes", payloadSizeInBytes);
+        SAFE_ESP_LOGD(LM_TAG, "Creating a packet for send with %d bytes", payloadSizeInBytes);
 
         //Create a data packet with the payload
         DataPacket* dPacket = PacketService::createDataPacket(dst, getLocalAddress(), DATA_P, reinterpret_cast<uint8_t*>(payload), payloadSizeInBytes);

@@ -44,6 +44,7 @@ void LoraMesher::standby() {
     vTaskSuspend(SendData_TaskHandle);
     vTaskSuspend(RoutingTableManager_TaskHandle);
     vTaskSuspend(QueueManager_TaskHandle);
+    vTaskSuspend(TestDataGenerator::TestDataTask_TaskHandle);
 
     //Set previous priority
     vTaskPrioritySet(NULL, prevPriority);
@@ -63,6 +64,7 @@ void LoraMesher::start() {
     vTaskResume(SendData_TaskHandle);
     vTaskResume(RoutingTableManager_TaskHandle);
     vTaskResume(QueueManager_TaskHandle);
+    vTaskResume(TestDataGenerator::TestDataTask_TaskHandle);
 
     // Start Receiving
     startReceiving();
@@ -78,6 +80,9 @@ LoraMesher::~LoraMesher() {
     vTaskDelete(SendData_TaskHandle);
     vTaskDelete(RoutingTableManager_TaskHandle);
     vTaskDelete(QueueManager_TaskHandle);
+
+    // 停止日志管理器  
+    LogManager::getInstance().stop();  
 
     ToSendPackets->Clear();
     delete ToSendPackets;
@@ -244,7 +249,7 @@ int LoraMesher::startReceiving() {
 
     int res = radio->startReceive();
     if (res != 0) {
-        ESP_LOGE(LM_TAG, "Starting receiving gave error: %d", res);
+        SAFE_ESP_LOGE(LM_TAG, "Starting receiving gave error: %d", res);
         restartRadio();
         return startReceiving();
     }
@@ -278,6 +283,17 @@ int LoraMesher::startChannelScan() {
 
 void LoraMesher::initializeSchedulers() {
     ESP_LOGV(LM_TAG, "Setting up Schedulers");
+
+	// 首先初始化日志管理器  
+    LogManager::getInstance().init();  
+    LogManager::getInstance().start();  
+
+    // 等待日志任务启动  
+    vTaskDelay(100 / portTICK_PERIOD_MS);  
+      
+    // 现在可以使用安全的日志输出  
+    SAFE_ESP_LOGI(LM_TAG, "Starting scheduler initialization with safe logging"); 
+    
     int res = xTaskCreate(
         [](void* o) { static_cast<LoraMesher*>(o)->receivingRoutine(); },
         "Receiving routine",
@@ -352,6 +368,8 @@ ICACHE_RAM_ATTR
 void LoraMesher::onReceive(void) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+    SAFE_ESP_LOGV("recvISR", "Recv data");
+
     xHigherPriorityTaskWoken = xTaskNotifyFromISR(
         LoraMesher::getInstance().ReceivePacket_TaskHandle,
         0,
@@ -379,25 +397,25 @@ void LoraMesher::receivingRoutine() {
             portMAX_DELAY);
 
         if (TWres == pdPASS) {
-            ESP_LOGV(LM_TAG, "Stack space unused after entering the task: %d", uxTaskGetStackHighWaterMark(NULL));
-            ESP_LOGV(LM_TAG, "Free heap: %d", getFreeHeap());
+            SAFE_ESP_LOGV(LM_TAG, "Stack space unused after entering the task: %d", uxTaskGetStackHighWaterMark(NULL));
+            SAFE_ESP_LOGV(LM_TAG, "Free heap: %d", getFreeHeap());
 
             hasReceivedMessage = true;
 
             packetSize = radio->getPacketLength();
             if (packetSize == 0)
-                ESP_LOGW(LM_TAG, "Empty packet received");
+                SAFE_ESP_LOGW(LM_TAG, "Empty packet received");
             else {
                 Packet<uint8_t>* rx = PacketService::createEmptyPacket(packetSize);
 
                 rssi = (int8_t) round(radio->getRSSI());
                 snr = (int8_t) round(radio->getSNR());
 
-                ESP_LOGI(LM_TAG, "Receiving LoRa packet: Size: %d bytes RSSI: %d SNR: %d", packetSize, rssi, snr);
+                SAFE_ESP_LOGD(LM_TAG, "Receiving LoRa packet: Size: %d bytes RSSI: %d SNR: %d", packetSize, rssi, snr);
 
                 size_t max_packet_size = PacketFactory::getMaxPacketSize();
                 if (packetSize > max_packet_size) {
-                    ESP_LOGW(LM_TAG, "Received packet with size greater than MAX Packet Size");
+                    SAFE_ESP_LOGW(LM_TAG, "Received packet with size greater than MAX Packet Size");
                     packetSize = max_packet_size;
                 }
 
@@ -487,7 +505,7 @@ bool LoraMesher::sendPacket(Packet<uint8_t>* p) {
     startReceiving();
 
     if (resT != RADIOLIB_ERR_NONE) {
-        ESP_LOGE(LM_TAG, "Transmit gave error: %d", resT);
+        SAFE_ESP_LOGE(LM_TAG, "Transmit gave error: %d", resT);
         return false;
     }
     return true;
@@ -587,7 +605,7 @@ void LoraMesher::sendPackets() {
 }
 
 void LoraMesher::sendHelloPacket() {
-    ESP_LOGV(LM_TAG, "Send Hello Packet routine started");
+    SAFE_ESP_LOGI(LM_TAG, "Send Hello Packet routine started");
 
     vTaskSuspend(NULL);
 
@@ -599,9 +617,9 @@ void LoraMesher::sendHelloPacket() {
     vTaskDelay(2000 / portTICK_PERIOD_MS);
 
     for (;;) {
-        ESP_LOGV(LM_TAG, "Creating Routing Packet");
-        ESP_LOGV(LM_TAG, "Stack space unused after entering the task: %d", uxTaskGetStackHighWaterMark(NULL));
-        ESP_LOGV(LM_TAG, "Free heap: %d", getFreeHeap());
+        SAFE_ESP_LOGV("sendHelloPacket", "Creating Routing Packet");
+        SAFE_ESP_LOGV("sendHelloPacket", "Stack space unused after entering the task: %d", uxTaskGetStackHighWaterMark(NULL));
+        SAFE_ESP_LOGV("sendHelloPacket", "Free heap: %d", getFreeHeap());
 
         incSentHelloPackets();
 
