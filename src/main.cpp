@@ -1,35 +1,36 @@
 /*
- *FileName:    main.cpp
- *Description:
- */
+*FileName:    main.cpp
+*Description:
+*/
 
 /* ----------------------------------------------------------------------------
- * include
+* include
 ----------------------------------------------------------------------------- */
 #include "main.h"
 #include "LoraMesher.h"
 
 /* ----------------------------------------------------------------------------
- * defines
+* defines
 ----------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------------
- * variables
+* variables
 ----------------------------------------------------------------------------- */
 /*
- * extern variables
- */
+* extern variables
+*/
 DISPLAY_MODEL *u8g2 = nullptr;
 
 /*
- * static variables
- */
+* static variables
+*/
 static LoraMesher &radio = LoraMesher::getInstance();
 
 void setup()
 {
     initBoard();
     setupLoraMesher();
+    setupWiFi();
 }
 
 void loop()
@@ -87,3 +88,11 @@ void setupLoraMesher(void)
     radio.begin(config);
     radio.start();
 }
+
+void setupWiFi(void)
+{
+	// 添加WiFi传输器初始化  
+    WiFiTransmitter* wifiTx = WiFiTransmitter::getInstance();  
+    wifiTx->begin("XDZY-1", "xidianzy"); 
+}
+

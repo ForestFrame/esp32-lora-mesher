@@ -189,7 +189,7 @@ void RoutingTableService::resetTimeoutRoutingNode(RouteNode* node) {
 }
 
 void RoutingTableService::printRoutingTable() {
-    ESP_LOGI(LM_TAG, "Current routing table:");
+    SAFE_ESP_LOGI(LM_TAG, "Current routing table:");
 
     routingTableList->setInUse();
 
@@ -199,7 +199,7 @@ void RoutingTableService::printRoutingTable() {
         do {
             RouteNode* node = routingTableList->getCurrent();
 
-            ESP_LOGI(LM_TAG, "%d - %X via %X metric %d Role %d", position,
+            SAFE_ESP_LOGI(LM_TAG, "%d - %X via %X metric %d Role %d", position,
                 node->networkNode.address,
                 node->via,
                 node->networkNode.metric,

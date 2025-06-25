@@ -1,9 +1,12 @@
 #ifndef _LORAMESHER_H
 #define _LORAMESHER_H
 
-#include "../include/utilities.h"
-#include "../include/TestDataGenerator.h"
-#include "../include/LogManager.h"
+#include "utilities.h"
+#include "TestDataGenerator.h"
+#include "LogManager.h"
+#include "WiFiTransmitter.h"
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
 // LoRa libraries
 #include "RadioLib.h"

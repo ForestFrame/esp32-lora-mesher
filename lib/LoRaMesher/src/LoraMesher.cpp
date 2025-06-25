@@ -7,7 +7,7 @@
 LoraMesher::LoraMesher() {}
 
 void LoraMesher::begin(LoraMesherConfig config) {
-    ESP_LOGV(LM_TAG, "Initializing LoraMesher v%s", LM_VERSION);
+    SAFE_ESP_LOGV(LM_TAG, "Initializing LoraMesher v%s", LM_VERSION);
 
     // Set the configuration
     *loraMesherConfig = config;
@@ -764,7 +764,7 @@ void LoraMesher::printHeaderPacket(Packet<uint8_t>* p, String title) {
     bool isDataPacket = PacketService::isDataPacket(p->type);
     bool isControlPacket = PacketService::isControlPacket(p->type);
 
-    ESP_LOGV(LM_TAG, "Packet %s -- Size: %d Src: %X Dst: %X Id: %d Type: %d Via: %X Seq_Id: %d Num: %d",
+    SAFE_ESP_LOGV(LM_TAG, "Packet %s -- Size: %d Src: %X Dst: %X Id: %d Type: %d Via: %X Seq_Id: %d Num: %d",
         title.c_str(),
         p->packetSize,
         p->src,

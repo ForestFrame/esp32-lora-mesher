@@ -26,5 +26,6 @@
 ----------------------------------------------------------------------------- */
 void initBoard(void);
 void setupLoraMesher(void);
+void setupWiFi(void);
 
 #endif

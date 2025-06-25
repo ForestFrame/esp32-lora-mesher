@@ -301,6 +301,7 @@
     "vector": "cpp",
     "string_view": "cpp",
     "initializer_list": "cpp",
-    "new": "cpp"
+    "new": "cpp",
+    "cmath": "cpp"
   }
 }

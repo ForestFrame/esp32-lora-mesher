@@ -1,0 +1,110 @@
+{
+    "type": "float-area",
+    "_widgets": [
+        [
+            {
+                "widget": {
+                    "constructionOptions": {
+                        "factoryId": "code-editor-opener",
+                        "options": {
+                            "kind": "navigatable",
+                            "uri": "file:///d%3A/Study/All_Prj/GitHubDesktop_respository/esp32-lora-mesher/lib/LoRaMesher/src/LoraMesher.cpp",
+                            "floatAreaId": "1ffa97d5-94c3-4d1b-8875-33125c871af0"
+                        }
+                    },
+                    "innerWidgetState": {
+                        "cursorState": [
+                            {
+                                "inSelectionMode": false,
+                                "selectionStart": {
+                                    "lineNumber": 577,
+                                    "column": 46
+                                },
+                                "position": {
+                                    "lineNumber": 577,
+                                    "column": 46
+                                }
+                            }
+                        ],
+                        "viewState": {
+                            "scrollLeft": 0,
+                            "firstPosition": {
+                                "lineNumber": 561,
+                                "column": 1
+                            },
+                            "firstPositionDeltaTop": -13
+                        },
+                        "contributionsState": {
+                            "editor.contrib.folding": {
+                                "lineCount": 1591,
+                                "provider": "syntax",
+                                "foldedImports": false
+                            },
+                            "editor.contrib.wordHighlighter": true
+                        }
+                    }
+                },
+                "width": 590.0356757275938,
+                "height": 450,
+                "spacing": 0
+            }
+        ],
+        [
+            {
+                "widget": {
+                    "constructionOptions": {
+                        "factoryId": "code-editor-opener",
+                        "options": {
+                            "kind": "navigatable",
+                            "uri": "file:///d%3A/Study/All_Prj/GitHubDesktop_respository/esp32-lora-mesher/lib/LoRaMesher/src/LoraMesher.h",
+                            "floatAreaId": "1ffa97d5-94c3-4d1b-8875-33125c871af0"
+                        }
+                    },
+                    "innerWidgetState": {
+                        "cursorState": [
+                            {
+                                "inSelectionMode": false,
+                                "selectionStart": {
+                                    "lineNumber": 633,
+                                    "column": 25
+                                },
+                                "position": {
+                                    "lineNumber": 633,
+                                    "column": 25
+                                }
+                            }
+                        ],
+                        "viewState": {
+                            "scrollLeft": 0,
+                            "firstPosition": {
+                                "lineNumber": 595,
+                                "column": 1
+                            },
+                            "firstPositionDeltaTop": 0
+                        },
+                        "contributionsState": {
+                            "editor.contrib.folding": {
+                                "lineCount": 1099,
+                                "provider": "syntax",
+                                "foldedImports": false
+                            },
+                            "editor.contrib.wordHighlighter": false
+                        }
+                    }
+                },
+                "width": 600,
+                "height": 450,
+                "spacing": 0
+            }
+        ]
+    ],
+    "_widths": [
+        590.0356757275938,
+        600
+    ],
+    "_modelData": {
+        "connections": [],
+        "annotations": [],
+        "highlights": []
+    }
+}
