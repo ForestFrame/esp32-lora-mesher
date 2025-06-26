@@ -102,9 +102,19 @@ extern const char* LM_VERSION;
 #define MAX_TRY_BEFORE_SEND 5
 
 //Role Types
-#define ROLE_DEFAULT 0b00000000
-#define ROLE_GATEWAY 0b00000001
+#define ROLE_DEFAULT  0b00000000
+#define ROLE_CLIENT	  0b00000001
+#define ROLE_GATEWAY  0b00000010
+#define ROLE_RELAY    0b00000100
+#define ROLE_TERMINAL 0b00001000
 //Free Role Types from 0b00000010 to 0b10000000
+
+//WiFi Para
+#define WIFINAME "XDZY-1"
+#define PASSWORD "xidianzy"
+
+#define UDP_SERVER_IP   "192.168.33.22"  // 电脑的局域网 IP
+#define UDP_SERVER_PORT 8080             // 上位机监听的端口
 
 // Define if is testing
 // #define LM_TESTING

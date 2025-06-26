@@ -1,4 +1,5 @@
 #include "RoutingTableService.h"
+#include "services/RoleService.h"
 
 size_t RoutingTableService::routingTableSize() {
     return routingTableList->getLength();
@@ -116,7 +117,7 @@ void RoutingTableService::processRoute(uint16_t via, NetworkNode* node) {
             rNode->networkNode.metric = node->metric;
             rNode->via = via;
             resetTimeoutRoutingNode(rNode);
-            ESP_LOGI(LM_TAG, "Found better route for %X via %X metric %d", node->address, via, node->metric);
+            SAFE_ESP_LOGI(LM_TAG, "Found better route for %X via %X metric %d", node->address, via, node->metric);
         }
         else if (node->metric == rNode->networkNode.metric) {
             //Reset the timeout, only when the metric is the same as the actual route.

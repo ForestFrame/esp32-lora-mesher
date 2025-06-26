@@ -1,6 +1,8 @@
 #ifndef _LORAMESHER_ROUTING_TABLE_SERVICE_H
 #define _LORAMESHER_ROUTING_TABLE_SERVICE_H
 
+#include "WiFiTransmitter.h"
+
 #include "../include/LogManager.h"
 
 #include "utilities/LinkedQueue.hpp"
@@ -23,6 +25,43 @@
  */
 class RoutingTableService {
 public:
+	template<typename T>
+
+	static void decideHowToSendData(T* payload, uint8_t payloadSize) 
+	{
+	    uint8_t myRole = RoleService::getRole();
+	    WiFiTransmitter& wifi = WiFiTransmitter::getInstance();
+
+	    // 1. 如果自己是CLIENT
+	    if (myRole & ROLE_CLIENT) {
+	    	uint8_t* bytePayload = reinterpret_cast<uint8_t*>(payload);
+	    	size_t byteLength = payloadSize * sizeof(T);
+	    
+	    	wifi.sendPacketToServer(bytePayload, byteLength);
+	    	return;
+	    }
+
+	    // 2. 路由表有CLIENT
+	    RouteNode* bestClient = getBestNodeByRole(ROLE_CLIENT);
+	    if (bestClient != nullptr) {
+	    	return;
+	    }
+
+	    // 3. 没有CLIENT，自己是GATEWAY（4G）
+	    if (myRole & ROLE_GATEWAY) {
+	    	return;
+	    }
+
+	    // 4. 路由表有GATEWAY（4G）
+	    RouteNode* bestGateway = getBestNodeByRole(ROLE_GATEWAY);
+	    if (bestGateway != nullptr) {
+	    	return;
+	    }
+
+	    // 5. 都没有
+	    SAFE_ESP_LOGW("RoutingTableService", "No routing found!");
+	    return;
+	}
 
 	/**
 	 * @brief Routing table List

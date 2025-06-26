@@ -25,6 +25,8 @@ DISPLAY_MODEL *u8g2 = nullptr;
 * static variables
 */
 static LoraMesher &radio = LoraMesher::getInstance();
+static WiFiTransmitter& wifi = WiFiTransmitter::getInstance();
+
 
 void setup()
 {
@@ -35,6 +37,7 @@ void setup()
 
 void loop()
 {
+	WiFiStatus();	
 }
 
 void initBoard(void)
@@ -92,7 +95,18 @@ void setupLoraMesher(void)
 void setupWiFi(void)
 {
 	// 添加WiFi传输器初始化  
-    WiFiTransmitter* wifiTx = WiFiTransmitter::getInstance();  
-    wifiTx->begin("XDZY-1", "xidianzy"); 
+    wifi.begin(WIFINAME, PASSWORD); 
+}
+
+void WiFiStatus(void)
+{
+	if(wifi.isWiFiConnected() == false)
+	{
+		wifi.begin(WIFINAME, PASSWORD);
+	}
+	else
+	{
+		RoleService::setRole(ROLE_CLIENT);
+	}
 }
 

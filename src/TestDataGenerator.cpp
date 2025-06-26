@@ -93,40 +93,6 @@ void TestDataGenerator::generateTestPacket() {
       
     SAFE_ESP_LOGI("testDataGenerator", "Generating test packet #%d from node %X",   
              testData.sequenceNumber, testData.nodeId);  
-      
-    // 获取路由表中的节点数量  
-    size_t numOfNodes = loraMesher.routingTableSize();  
-      
-    if (numOfNodes > 0) {  
-        // 获取所有网络节点  
-        NetworkNode* nodes = RoutingTableService::getAllNetworkNodes();  
-          
-        // 随机选择一个目标节点（或广播）  
-        uint16_t destination;  
-        if (testData.sequenceNumber % 3 == 0) {  
-            // 每三个包发送一次广播  
-            destination = BROADCAST_ADDR;  
-            SAFE_ESP_LOGI("testDataGenerator", "Sending test packet to BROADCAST");  
-        } else {  
-            // 选择一个随机节点  
-            size_t targetIndex = testData.sequenceNumber % numOfNodes;  
-            destination = nodes[targetIndex].address;  
-            SAFE_ESP_LOGI("testDataGenerator", "Sending test packet to node %X", destination);  
-        }  
-          
-        // 使用LoRaMesher的createPacketAndSend方法发送数据  
-        // 这会自动将数据包加入到ToSendPackets队列中  
-        loraMesher.createPacketAndSend(destination, &testData, 1);  
-          
-        // 清理节点数组  
-        delete[] nodes;  
-          
-        SAFE_ESP_LOGI("testDataGenerator", "Test packet #%d queued for transmission", testData.sequenceNumber);  
-    } else {  
-        SAFE_ESP_LOGW("testDataGenerator", "No nodes in routing table, sending broadcast test packet");  
-          
-        // 如果没有其他节点，发送广播包  
-        loraMesher.createPacketAndSend(BROADCAST_ADDR, &testData, 1); 
-        SAFE_ESP_LOGV("testDataGenerator", "Test data size %d", sizeof(TestData));
-    }  
+
+    RoutingTableService::decideHowToSendData(&testData, 1);
 }

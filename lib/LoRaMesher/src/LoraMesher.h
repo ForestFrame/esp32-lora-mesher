@@ -30,6 +30,8 @@
 
 #include "services/SimulatorService.h"
 
+#include "entities/routingTable/RouteNode.h"
+
 /**
  * @brief LoRaMesher Library
  *
