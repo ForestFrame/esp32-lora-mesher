@@ -97,7 +97,7 @@ RoutePacket* PacketService::createRoutingPacket(uint16_t localAddress, NetworkNo
     size_t routingSizeInBytes = numOfNodes * sizeof(NetworkNode);
 
     RoutePacket* routePacket = PacketFactory::createPacket<RoutePacket>(reinterpret_cast<uint8_t*>(nodes), routingSizeInBytes);
-    routePacket->dst = BROADCAST_ADDR;
+    routePacket->dst = ADDR_BROADCAST;
     routePacket->src = localAddress;
     routePacket->type = HELLO_P;
     routePacket->packetSize = routingSizeInBytes + sizeof(RoutePacket);

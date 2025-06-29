@@ -89,7 +89,7 @@ public:
             memcpy(reinterpret_cast<void*>(cpPacket), reinterpret_cast<void*>(p), packetLength);
         }
         else {
-            ESP_LOGE(LM_TAG, "Copy Packet not allocated");
+            SAFE_ESP_LOGE(LM_TAG, "Copy Packet not allocated");
             return nullptr;
         }
 

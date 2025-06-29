@@ -27,7 +27,6 @@ using namespace std;
 #define SPI_MISO 11
 #endif
 
-
 #define LOW (0x0)
 #define HIGH (0x1)
 #define INPUT (0x01)
@@ -87,12 +86,18 @@ extern const char* LM_VERSION;
 #define SYNC_P     0b01000010
 
 // Packet configuration
-#define BROADCAST_ADDR 0xFFFF
+typedef enum {
+    NO_DESTNATION = 0xFFFC,
+    ADDR_WIFI = 0xFFFD,
+    ADDR_4G   = 0xFFFE,
+    ADDR_BROADCAST = 0xFFFF
+} special_addr_e;
 #define DEFAULT_PRIORITY 20
 #define MAX_PRIORITY 40
 
 //Definition Times in seconds
-#define HELLO_PACKETS_DELAY 2
+#define TEST_DATA_INTERVAL 2  // 测试数据生成间隔（秒）
+#define HELLO_PACKETS_DELAY 5 // Hello包生成间隔
 #define DEFAULT_TIMEOUT HELLO_PACKETS_DELAY*5
 #define MIN_TIMEOUT 20
 
@@ -107,16 +112,16 @@ extern const char* LM_VERSION;
 #define ROLE_GATEWAY  0b00000010
 #define ROLE_RELAY    0b00000100
 #define ROLE_TERMINAL 0b00001000
-//Free Role Types from 0b00000010 to 0b10000000
 
 //WiFi Para
 #define WIFINAME "XDZY-1"
 #define PASSWORD "xidianzy"
 
-#define UDP_SERVER_IP   "192.168.33.22"  // 电脑的局域网 IP
+#define UDP_SERVER_IP   "192.168.33.26"  // 电脑的局域网 IP
 #define UDP_SERVER_PORT 8080             // 上位机监听的端口
 
-// Define if is testing
-// #define LM_TESTING
+//Switches
+// #define LM_ENABLE_WIFI_SERVICE
+#define LM_ENABLE_TESTDATA_SERVICE
 
 #endif

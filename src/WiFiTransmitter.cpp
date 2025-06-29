@@ -42,15 +42,15 @@ bool WiFiTransmitter::sendPacketToServer(uint8_t* data, size_t len) {
         return false;
     }
 
-    static WiFiUDP udp;  // 静态只创建一次
+    static WiFiUDP udp;
 
-    int sentLen = udp.beginPacket(UDP_SERVER_IP, UDP_SERVER_PORT);
-    if (sentLen == 0) {
+    // 每次调用 beginPacket -> write -> endPacket 是完整的一次发送
+    if (!udp.beginPacket(UDP_SERVER_IP, UDP_SERVER_PORT)) {
         SAFE_ESP_LOGE("sendPacketToServer", "beginPacket failed");
         return false;
     }
 
-    udp.write(data, len);
+    udp.write(data, len);  // 写入整个 Packet<T> 的内容
     if (!udp.endPacket()) {
         SAFE_ESP_LOGE("sendPacketToServer", "endPacket failed");
         return false;
@@ -59,4 +59,5 @@ bool WiFiTransmitter::sendPacketToServer(uint8_t* data, size_t len) {
     SAFE_ESP_LOGI("sendPacketToServer", "Sent UDP packet (%d bytes)", len);
     return true;
 }
+
 

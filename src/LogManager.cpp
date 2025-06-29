@@ -22,7 +22,7 @@ void LogManager::init() {
       
     logQueue = xQueueCreate(LOG_QUEUE_SIZE, sizeof(log_message_t));  
     if (logQueue == nullptr) {  
-        ESP_LOGE("LogManager", "Failed to create log queue");  
+        SAFE_ESP_LOGE("LogManager", "Failed to create log queue");  
         return;  
     }  
       
@@ -32,7 +32,7 @@ void LogManager::init() {
   
 void LogManager::start() {  
     if (!initialized) {  
-        ESP_LOGE("LogManager", "LogManager not initialized");  
+        SAFE_ESP_LOGE("LogManager", "LogManager not initialized");  
         return;  
     }  
       
@@ -50,7 +50,7 @@ void LogManager::start() {
         &logTaskHandle);  
           
     if (res != pdPASS) {  
-        ESP_LOGE("LogManager", "Failed to create log task: %d", res);  
+        SAFE_ESP_LOGE("LogManager", "Failed to create log task: %d", res);  
     } else {  
         ESP_LOGI("LogManager", "Log Manager Task started");  
     }  
@@ -63,27 +63,32 @@ void LogManager::stop() {
     }  
 }  
   
-void LogManager::logTask(void* parameter) {  
-    log_message_t logMsg;  
-    const char* levelStrings[] = {"E", "W", "I", "D", "V"};  
-      
-    ESP_LOGI("LogManager", "Log processing task started");  
-      
-    for (;;) {  
-        if (xQueueReceive(logQueue, &logMsg, portMAX_DELAY) == pdTRUE) {  
-            // 格式化输出：等级 (时间戳) 标签: [文件名:行号] 消息  
-            printf("%s (%u) %s: [%s:%d] %s\n",   
-                   levelStrings[logMsg.level],   
-                   logMsg.timestamp,   
-                   logMsg.tag,  
-                   logMsg.fileName,  
-                   logMsg.lineNumber,  
-                   logMsg.message);  
-              
-            fflush(stdout);  
-        }  
-    }  
-}  
+void LogManager::logTask(void* parameter) {
+    log_message_t logMsg;
+    const char* levelStrings[] = {"E", "W", "I", "D", "V"};
+
+    ESP_LOGI("LogManager", "Log processing task started");
+
+    for (;;) {
+        if (xQueueReceive(logQueue, &logMsg, portMAX_DELAY) == pdTRUE) 
+        {
+        	uint32_t total_ms = logMsg.timestamp;
+			uint32_t minutes = total_ms / 60000;
+			uint32_t seconds = (total_ms % 60000) / 1000;
+			uint32_t millis  = total_ms % 1000;
+            // 格式化输出，带对齐
+            printf("[%-1s] [%02u:%02u:%03u] [%-24s:%-4d] [%-24s] %s\n",
+		       	levelStrings[logMsg.level],
+		       	minutes, seconds, millis,
+		       	logMsg.fileName,
+		       	logMsg.lineNumber,
+		       	logMsg.tag,
+		       	logMsg.message);
+
+            fflush(stdout);
+        }
+    }
+}
   
 void LogManager::safeLog(log_level_t level, const char* tag, const char* fileName, int lineNumber, const char* format, ...) {  
     if (!initialized || logQueue == nullptr) {  

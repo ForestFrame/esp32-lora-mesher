@@ -140,7 +140,7 @@ public:
      *       2,
      *       &receiveLoRaMessage_Handle);
      *   if (res != pdPASS) {
-     *       ESP_LOGE(LM_TAG, "Receive User Task creation gave error: %d", res);
+     *       SAFE_ESP_LOGE(LM_TAG, "Receive User Task creation gave error: %d", res);
      *   }
      *
      *   radio.setReceiveAppDataTaskHandle(receiveLoRaMessage_Handle);
@@ -256,13 +256,13 @@ public:
         //Get the size of the payload in bytes
         size_t payloadSizeInBytes = payloadSize * sizeof(T);
 
-        SAFE_ESP_LOGD(LM_TAG, "Creating a packet for send with %d bytes", payloadSizeInBytes);
+        SAFE_ESP_LOGD("createPacketAndSend", "Creating a packet for send with %d bytes.", payloadSizeInBytes);
 
         //Create a data packet with the payload
         DataPacket* dPacket = PacketService::createDataPacket(dst, getLocalAddress(), DATA_P, reinterpret_cast<uint8_t*>(payload), payloadSizeInBytes);
 
         //Create the packet and set it to the send queue
-        setPackedForSend(reinterpret_cast<Packet<uint8_t>*>(dPacket), DEFAULT_PRIORITY);
+        setPackedForSend(reinterpret_cast<Packet<uint8_t>*>(dPacket), DEFAULT_PRIORITY+2);
     }
 
     /**
@@ -561,6 +561,12 @@ private:
      */
     TaskHandle_t RoutingTableManager_TaskHandle = nullptr;
 
+    /**
+     * @brief Receive LoRa Message Task Handle
+     *
+     */
+    TaskHandle_t receiveLoRaMessage_Handle = NULL;
+
     void initConfiguration();
 
     static void onReceive(void);
@@ -665,9 +671,9 @@ private:
      * @param priority Priority set DEFAULT_PRIORITY by default. 0 most priority
      */
     void setPackedForSend(Packet<uint8_t>* p, uint8_t priority) {
-        ESP_LOGI(LM_TAG, "Adding packet to Q_SP");
+        SAFE_ESP_LOGV("setPackedForSend", "Adding packet to Q_SP.");
         QueuePacket<Packet<uint8_t>>* send = PacketQueueService::createQueuePacket(p, priority);
-        ESP_LOGI(LM_TAG, "Created packet to Q_SP");
+        SAFE_ESP_LOGV("setPackedForSend", "Created packet to Q_SP.");
         addToSendOrderedAndNotify(send);
         //TODO: Using vTaskDelay to kill the packet inside LoraMesher
     }
@@ -1099,6 +1105,9 @@ public:
      * @return size_t number of packets
      */
     size_t queueWaitingReceivedPacketsLength() { return q_WRP->getLength(); }
+
+    void processReceivedPackets(void);
+    void createUploadDataPacket(AppPacket<DataPacket> *packet);
 };
 
 #endif

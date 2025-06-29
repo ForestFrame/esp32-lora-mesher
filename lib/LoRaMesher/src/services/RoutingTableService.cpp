@@ -70,7 +70,7 @@ uint8_t RoutingTableService::getNumberOfHops(uint16_t address) {
 
 void RoutingTableService::processRoute(RoutePacket* p, int8_t receivedSNR) {
     if ((p->packetSize - sizeof(RoutePacket)) % sizeof(NetworkNode) != 0) {
-        ESP_LOGE(LM_TAG, "Invalid route packet size");
+        SAFE_ESP_LOGE(LM_TAG, "Invalid route packet size");
         return;
     }
 
@@ -200,7 +200,7 @@ void RoutingTableService::printRoutingTable() {
         do {
             RouteNode* node = routingTableList->getCurrent();
 
-            SAFE_ESP_LOGI(LM_TAG, "%d - %X via %X metric %d Role %d", position,
+            SAFE_ESP_LOGI("printRoutingTable", "%d - %X via %X metric %d Role %d", position,
                 node->networkNode.address,
                 node->via,
                 node->networkNode.metric,

@@ -11,6 +11,7 @@
 #define LOG_QUEUE_SIZE 50  
 #define LOG_MESSAGE_MAX_SIZE 256  
 #define LOG_FILE_NAME_MAX_SIZE 32  
+#define LOG_TAG_MAX_SIZE 32
   
 // 日志等级控制宏 - 可以在编译时设置  
 #ifndef LOG_LEVEL_THRESHOLD  
@@ -27,7 +28,7 @@ typedef enum {
   
 typedef struct {  
     log_level_t level;  
-    char tag[16];  
+    char tag[LOG_TAG_MAX_SIZE];  
     char fileName[LOG_FILE_NAME_MAX_SIZE];  
     int lineNumber;  
     char message[LOG_MESSAGE_MAX_SIZE];  

@@ -3,6 +3,7 @@
 
 #include "BuildOptions.h"
 #include "PacketHeader.h"
+#include "LogManager.h"
 
 #pragma pack(1)
 template <typename T>
@@ -17,7 +18,7 @@ public:
      * @param p Packet to be deleted
      */
     void operator delete(void* p) {
-        ESP_LOGV(LM_TAG, "Deleting  packet");
+        SAFE_ESP_LOGV(LM_TAG, "Deleting  packet");
         vPortFree(p);
     }
 

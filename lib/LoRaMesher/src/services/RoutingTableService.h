@@ -25,42 +25,37 @@
  */
 class RoutingTableService {
 public:
-	template<typename T>
 
-	static void decideHowToSendData(T* payload, uint8_t payloadSize) 
+	static special_addr_e decideHowToSendData(void) 
 	{
 	    uint8_t myRole = RoleService::getRole();
 	    WiFiTransmitter& wifi = WiFiTransmitter::getInstance();
 
 	    // 1. 如果自己是CLIENT
 	    if (myRole & ROLE_CLIENT) {
-	    	uint8_t* bytePayload = reinterpret_cast<uint8_t*>(payload);
-	    	size_t byteLength = payloadSize * sizeof(T);
-	    
-	    	wifi.sendPacketToServer(bytePayload, byteLength);
-	    	return;
+	    	return ADDR_WIFI;
 	    }
 
 	    // 2. 路由表有CLIENT
 	    RouteNode* bestClient = getBestNodeByRole(ROLE_CLIENT);
 	    if (bestClient != nullptr) {
-	    	return;
+	    	return static_cast<special_addr_e>(bestClient->networkNode.address);
 	    }
 
 	    // 3. 没有CLIENT，自己是GATEWAY（4G）
 	    if (myRole & ROLE_GATEWAY) {
-	    	return;
+	    	return ADDR_4G;
 	    }
 
 	    // 4. 路由表有GATEWAY（4G）
 	    RouteNode* bestGateway = getBestNodeByRole(ROLE_GATEWAY);
 	    if (bestGateway != nullptr) {
-	    	return;
+	    	return static_cast<special_addr_e>(bestGateway->networkNode.address);
 	    }
 
 	    // 5. 都没有
 	    SAFE_ESP_LOGW("RoutingTableService", "No routing found!");
-	    return;
+	    return NO_DESTNATION;
 	}
 
 	/**

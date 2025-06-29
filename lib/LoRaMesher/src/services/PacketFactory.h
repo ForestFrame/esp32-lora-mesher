@@ -43,12 +43,12 @@ public:
             actualPacketSize = maxPacketSize;
         }
 
-        SAFE_ESP_LOGD(LM_TAG, "Creating packet with %u bytes", actualPacketSize);
+        SAFE_ESP_LOGV("createPacket", "Creating packet with %u bytes.", actualPacketSize);
 
         // Allocate memory for the packet
         T* packet = static_cast<T*>(pvPortMalloc(actualPacketSize));
         if (packet == nullptr) {
-            ESP_LOGE(LM_TAG, "Failed to allocate packet memory");
+            SAFE_ESP_LOGE(LM_TAG, "Failed to allocate packet memory");
             return nullptr;
         }
 
@@ -72,7 +72,7 @@ public:
             memcpy(payloadDest, payload, copySize);
         }
 
-        ESP_LOGI(LM_TAG, "Packet created with %u bytes", actualPacketSize);
+        SAFE_ESP_LOGV("createPacket", "Packet created with %u bytes.", actualPacketSize);
         return packet;
     };
 

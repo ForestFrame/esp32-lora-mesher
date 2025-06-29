@@ -77,13 +77,13 @@ void TestDataGenerator::testDataGenerationTask() {
 }  
   
 void TestDataGenerator::generateTestPacket() {  
-    LoraMesher& loraMesher = LoraMesher::getInstance();  
+    LoraMesher& radio = LoraMesher::getInstance();  
       
     // 创建测试数据结构  
     TestData testData;  
     testData.sequenceNumber = testPacketCounter++;  
     testData.timestamp = millis();  
-    testData.nodeId = loraMesher.getLocalAddress();  
+    testData.nodeId = radio.getLocalAddress();  
     testData.testType = 0x01; // 测试数据类型标识  
       
     // 填充测试负载  
@@ -91,8 +91,8 @@ void TestDataGenerator::generateTestPacket() {
         testData.payload[i] = (uint8_t)(testData.sequenceNumber + i) & 0xFF;  
     }  
       
-    SAFE_ESP_LOGI("testDataGenerator", "Generating test packet #%d from node %X",   
+    SAFE_ESP_LOGV("testDataGenerator", "Generating test packet #%d from node %X.",   
              testData.sequenceNumber, testData.nodeId);  
 
-    RoutingTableService::decideHowToSendData(&testData, 1);
+	radio.createPacketAndSend(ADDR_BROADCAST, &testData, 1);
 }

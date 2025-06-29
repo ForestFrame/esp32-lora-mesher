@@ -2,7 +2,7 @@
 #define _LORAMESHER_DATA_PACKET_H
 
 #include "RouteDataPacket.h"
-
+#include "LogManager.h"
 #include "BuildOptions.h"
 
 #pragma pack(1)
@@ -16,7 +16,7 @@ public:
      * @param p Packet to be deleted
      */
     void operator delete(void* p) {
-        ESP_LOGV(LM_TAG, "Deleting Data packet");
+        SAFE_ESP_LOGV(LM_TAG, "Deleting Data packet");
         vPortFree(p);
     }
 };

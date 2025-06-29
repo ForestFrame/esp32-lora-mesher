@@ -32,7 +32,6 @@ void setup()
 {
     initBoard();
     setupLoraMesher();
-    setupWiFi();
 }
 
 void loop()
@@ -92,14 +91,9 @@ void setupLoraMesher(void)
     radio.start();
 }
 
-void setupWiFi(void)
-{
-	// 添加WiFi传输器初始化  
-    wifi.begin(WIFINAME, PASSWORD); 
-}
-
 void WiFiStatus(void)
 {
+#ifdef LM_ENABLE_WIFI_SERVICE
 	if(wifi.isWiFiConnected() == false)
 	{
 		wifi.begin(WIFINAME, PASSWORD);
@@ -108,5 +102,6 @@ void WiFiStatus(void)
 	{
 		RoleService::setRole(ROLE_CLIENT);
 	}
+#endif
 }
 

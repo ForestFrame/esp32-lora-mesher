@@ -58,7 +58,7 @@ LM_LinkedList<T>::LM_LinkedList() {
     xSemaphore = xSemaphoreCreateMutex();
 
     if (xSemaphore == NULL) {
-        ESP_LOGE(LM_TAG, "Semaphore in Linked List not created");
+        SAFE_ESP_LOGE(LM_TAG, "Semaphore in Linked List not created");
     }
 }
 
@@ -73,7 +73,7 @@ inline LM_LinkedList<T>::LM_LinkedList(LM_LinkedList<T>& list) {
     xSemaphore = xSemaphoreCreateMutex();
 
     if (xSemaphore == NULL) {
-        ESP_LOGE(LM_TAG, "Semaphore in Linked List not created");
+        SAFE_ESP_LOGE(LM_TAG, "Semaphore in Linked List not created");
     }
 
 

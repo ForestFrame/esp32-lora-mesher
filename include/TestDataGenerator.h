@@ -53,7 +53,4 @@ public:
     uint32_t getGeneratedPacketCount() { return testPacketCounter; }
 };
 
-// 测试数据生成间隔（秒）
-#define TEST_DATA_INTERVAL 2
-
 #endif

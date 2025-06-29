@@ -2,6 +2,7 @@
 #define _LORAMESHER_APPPACKET_H
 
 #include "BuildOptions.h"
+#include "LogManager.h"
 
 /**
  * @brief Application packet, it is used to send the packet to the application layer
@@ -12,7 +13,7 @@ template <class T>
 class AppPacket {
 public:
     /**
-     * @brief Destination address, normally it will be local address or BROADCAST_ADDR
+     * @brief Destination address, normally it will be local address or ADDR_BROADCAST
      *
      */
     uint16_t dst;
@@ -50,7 +51,7 @@ public:
      * @param p AppPacket to be deleted
      */
     void operator delete(void* p) {
-        ESP_LOGV(LM_TAG, "Deleting app packet");
+        SAFE_ESP_LOGV(LM_TAG, "Deleting app packet");
         vPortFree(p);
     }
 };
