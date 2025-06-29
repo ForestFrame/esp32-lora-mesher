@@ -52,8 +52,8 @@ extern const char* LM_VERSION;
 // 866E6 for Europe
 // 915E6 for North America
 #define LM_BAND 433.00F
-#define LM_BANDWIDTH 125.0
-#define LM_LORASF 9U
+#define LM_BANDWIDTH 500.0
+#define LM_LORASF 7U
 #define LM_CODING_RATE 7U
 #define LM_PREAMBLE_LENGTH 8U
 #define LM_POWER 22
@@ -121,7 +121,7 @@ typedef enum {
 #define UDP_SERVER_PORT 8080             // 上位机监听的端口
 
 //Switches
-// #define LM_ENABLE_WIFI_SERVICE
+#define LM_ENABLE_WIFI_SERVICE
 #define LM_ENABLE_TESTDATA_SERVICE
 
 #endif

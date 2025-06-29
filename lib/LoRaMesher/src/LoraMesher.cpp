@@ -607,15 +607,18 @@ void LoraMesher::sendPackets()
 
             ToSendPackets->setInUse();
 
-            SAFE_ESP_LOGV("sendPackets", "Size of Send Packets Queue: %d.", ToSendPackets->getLength());
+            SAFE_ESP_LOGI("sendPackets", "Size of Send Packets Queue: %d.", ToSendPackets->getLength());
 
             QueuePacket<Packet<uint8_t>> *tx = ToSendPackets->Pop();
+
+            SAFE_ESP_LOGI("sendPackets", "Popped packet with type %d and priority %d and number %d", 
+                          tx->packet->type, tx->priority, tx->number);
 
             ToSendPackets->releaseInUse();
 
             if (tx)
             {
-                SAFE_ESP_LOGV("sendPackets", "Send n. %d.", sendCounter);
+                SAFE_ESP_LOGV("sendPackets", "Send num %d.", sendCounter);
 
                 if (tx->packet->src == getLocalAddress())
                     tx->packet->id = sendId++;
@@ -713,7 +716,7 @@ void LoraMesher::sendPackets()
 
                 TickType_t delayBetweenSend = timeOnAir * dutyCycleEvery;
 
-                SAFE_ESP_LOGV(LM_TAG, "TimeOnAir %d ms, next message in %d ms", (int)timeOnAir, (int)delayBetweenSend);
+                SAFE_ESP_LOGI(LM_TAG, "TimeOnAir %d ms, next message in %d ms", (int)timeOnAir, (int)delayBetweenSend);
 
                 PacketQueueService::deleteQueuePacketAndPacket(tx);
 
@@ -765,7 +768,7 @@ void LoraMesher::sendHelloPacket()
             RoutePacket *tx = PacketService::createRoutingPacket(
                 getLocalAddress(), &nodes[startIndex], nodesInThisPacket, RoleService::getRole());
 
-            setPackedForSend(reinterpret_cast<Packet<uint8_t> *>(tx), DEFAULT_PRIORITY + 1);
+            setPackedForSend(reinterpret_cast<Packet<uint8_t> *>(tx), DEFAULT_PRIORITY + 2);
         }
 
         // Delete the nodes array

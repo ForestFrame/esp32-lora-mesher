@@ -1,6 +1,8 @@
 #ifndef _LORAMESHER_PACKET_QUEUE_SERVICE_H
 #define _LORAMESHER_PACKET_QUEUE_SERVICE_H
 
+#include "LogManager.h"
+
 #include "entities/packets/QueuePacket.h"
 
 #include "services/PacketService.h"
