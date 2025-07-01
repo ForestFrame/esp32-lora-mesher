@@ -100,7 +100,7 @@ typedef enum {
 #define TEST_DATA_DELAY 2  // 测试数据生成间隔（秒）
 #define ROUTING_TABLE_UPDATE_DELAY 2 // 路由表更新间隔（秒）
 #define HELLO_PACKETS_DELAY 5 // Hello包生成间隔
-#define DEFAULT_TIMEOUT HELLO_PACKETS_DELAY*3
+#define DEFAULT_TIMEOUT HELLO_PACKETS_DELAY*1
 #define MIN_TIMEOUT 20
 
 //Maximum times that a sequence of packets reach the timeout
