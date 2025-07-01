@@ -20,7 +20,7 @@ public:
     WiFiTransmitter& operator=(const WiFiTransmitter&) = delete;
 
     void begin(const char* ssid, const char* password);
-    bool isWiFiConnected() const;
+    bool isWiFiConnected();
 
     // 主动向上位机发送二进制数据，返回是否成功
     bool sendPacketToServer(uint8_t* data, size_t len);

@@ -47,6 +47,8 @@ void LoraMesher::standby()
     vTaskSuspend(RoutingTableManager_TaskHandle);
     vTaskSuspend(QueueManager_TaskHandle);
     vTaskSuspend(TestDataGenerator::TestDataTask_TaskHandle);
+    vTaskSuspend(receiveLoRaMessage_TaskHandle);
+    vTaskSuspend(routeUpload_TaskHandle);
 
     // Set previous priority
     vTaskPrioritySet(NULL, prevPriority);
@@ -68,6 +70,8 @@ void LoraMesher::start()
     vTaskResume(RoutingTableManager_TaskHandle);
     vTaskResume(QueueManager_TaskHandle);
     vTaskResume(TestDataGenerator::TestDataTask_TaskHandle);
+    vTaskResume(receiveLoRaMessage_TaskHandle);
+    vTaskResume(routeUpload_TaskHandle);
 
     // Start Receiving
     startReceiving();
@@ -306,7 +310,7 @@ int LoraMesher::startChannelScan()
 
 void LoraMesher::initializeSchedulers()
 {
-    LoraMesher& radio = LoraMesher::getInstance(); 
+    LoraMesher &radio = LoraMesher::getInstance();
     SAFE_ESP_LOGV("initializeSchedulers", "Setting up Schedulers.");
 
     // 首先初始化日志管理器
@@ -392,19 +396,30 @@ void LoraMesher::initializeSchedulers()
         SAFE_ESP_LOGE("initializeSchedulers", "Queue Manager Task creation gave error: %d!", res);
     }
     res = xTaskCreate(
-    [](void *o)
-    { static_cast<LoraMesher *>(o)->processReceivedPackets(); },
-    "Receive User routine",
-    4096,
-    this,  // ← 正确：传递 this 指针
-    2,
-    &receiveLoRaMessage_Handle);
-
+        [](void *o)
+        { static_cast<LoraMesher *>(o)->processReceivedPackets(); },
+        "Receive User routine",
+        4096,
+        this,
+        2,
+        &receiveLoRaMessage_TaskHandle);
     if (res != pdPASS)
     {
         SAFE_ESP_LOGE("initializeSchedulers", "Receive User Task creation gave error: %d!", res);
     }
-    radio.setReceiveAppDataTaskHandle(receiveLoRaMessage_Handle);
+    radio.setReceiveAppDataTaskHandle(receiveLoRaMessage_TaskHandle);
+    res = xTaskCreate(
+        [](void *o)
+        { static_cast<LoraMesher *>(o)->routeUpload(); },
+        "Upload routine",
+        4096,
+        this,
+        1,
+        &routeUpload_TaskHandle);
+    if (res != pdPASS)
+    {
+        SAFE_ESP_LOGE("initializeSchedulers", "Receive User Task creation gave error: %d!", res);
+    }
 
     // 初始化并启动测试数据生成器
     TestDataGenerator::getInstance().begin();
@@ -611,7 +626,7 @@ void LoraMesher::sendPackets()
 
             QueuePacket<Packet<uint8_t>> *tx = ToSendPackets->Pop();
 
-            SAFE_ESP_LOGI("sendPackets", "Popped packet with type %d and priority %d and number %d", 
+            SAFE_ESP_LOGI("sendPackets", "Popped packet with type %d and priority %d and number %d",
                           tx->packet->type, tx->priority, tx->number);
 
             ToSendPackets->releaseInUse();
@@ -619,9 +634,6 @@ void LoraMesher::sendPackets()
             if (tx)
             {
                 SAFE_ESP_LOGV("sendPackets", "Send num %d.", sendCounter);
-
-                if (tx->packet->src == getLocalAddress())
-                    tx->packet->id = sendId++;
 
                 // If the packet has a data packet and its destination is not broadcast add the via to the packet and forward the packet
                 if (PacketService::isDataPacket(tx->packet->type) && tx->packet->dst != ADDR_BROADCAST) // 中转的业务数据走这个判断
@@ -649,7 +661,7 @@ void LoraMesher::sendPackets()
                     {
                         (reinterpret_cast<DataPacket *>(tx->packet))->via = ADDR_WIFI;
                         printHeaderPacket(tx->packet, "send");
-                        SAFE_ESP_LOGD("sendPackets", "Sending data to %X via WiFi.", tx->packet->dst);
+                        SAFE_ESP_LOGD("sendPackets", "Sending data to %X via WiFi with %d bytes.", tx->packet->dst, tx->packet->packetSize);
                         WiFiTransmitter::getInstance().sendPacketToServer(reinterpret_cast<uint8_t *>(tx->packet), tx->packet->packetSize);
                         PacketQueueService::deleteQueuePacketAndPacket(tx);
                         continue;
@@ -728,7 +740,7 @@ void LoraMesher::sendPackets()
 
 void LoraMesher::sendHelloPacket()
 {
-    SAFE_ESP_LOGI(LM_TAG, "Send Hello Packet routine started");
+    SAFE_ESP_LOGV(LM_TAG, "Send Hello Packet routine started");
 
     vTaskSuspend(NULL);
 
@@ -897,7 +909,6 @@ void LoraMesher::printHeaderPacket(Packet<uint8_t> *p, String title)
                   p->packetSize,
                   p->src,
                   p->dst,
-                  p->id,
                   p->type,
                   isDataPacket ? (reinterpret_cast<DataPacket *>(p))->via : 0,
                   isControlPacket ? (reinterpret_cast<ControlPacket *>(p))->seq_id : 0,
@@ -1808,7 +1819,7 @@ void LoraMesher::processReceivedPackets(void)
 {
     for (;;)
     {
-        LoraMesher& radio = LoraMesher::getInstance();
+        LoraMesher &radio = LoraMesher::getInstance();
         ulTaskNotifyTake(pdPASS, portMAX_DELAY);
 
         while (radio.getReceivedQueueSize() > 0)
@@ -1822,10 +1833,47 @@ void LoraMesher::processReceivedPackets(void)
 
 void LoraMesher::createUploadDataPacket(AppPacket<DataPacket> *packet)
 {
-    //Create a data packet with the payload
-    DataPacket* dPacket = PacketService::createDataPacket(ADDR_BROADCAST, packet->src, DATA_P, reinterpret_cast<uint8_t*>(packet->payload),
-                                                           packet->payloadSize);
-    //Create the packet and set it to the send queue
-    setPackedForSend(reinterpret_cast<Packet<uint8_t>*>(dPacket), DEFAULT_PRIORITY+2);
-    SAFE_ESP_LOGI("createUploadDataPacket", "Created upload data packet with %d bytes from %X to %X.", packet->payloadSize, packet->src, ADDR_BROADCAST);
+    WiFiTransmitter& wifi = WiFiTransmitter::getInstance();
+
+    if(RoleService::getRole() == ROLE_CLIENT)
+    {
+        DataPacket *dPacket = PacketService::createDataPacket(ADDR_WIFI, packet->src, DATA_P, reinterpret_cast<uint8_t *>(packet->payload), packet->payloadSize);
+        wifi.sendPacketToServer(reinterpret_cast<uint8_t*>(dPacket), sizeof(DataPacket) + packet->payloadSize);
+        SAFE_ESP_LOGI("createUploadDataPacket", "Upload data packet with %d bytes from %X to %X.", packet->payloadSize, packet->src, ADDR_WIFI);
+    }
+    else if(RoleService::getRole() == ROLE_GATEWAY)
+    {
+        // TODO: Implement the server logic to handle the upload data packet
+    }
+    else
+    {
+        SAFE_ESP_LOGW("createUploadDataPacket", "Cannot upload data packet, role not supported: %d!", RoleService::getRole());
+    }
+}
+
+/* ----------------------------------------------------------------------------
+ * Function: routeUpload
+----------------------------------------------------------------------------- */
+void LoraMesher::routeUpload(void)
+{
+    vTaskSuspend(NULL);
+    for (;;)
+    {
+        WiFiTransmitter& wifi = WiFiTransmitter::getInstance();
+        if(wifi.isWiFiConnected() == true)
+        {
+            RoutingTableService::route_entry_t route_table[5];
+            int count = RoutingTableService::createRoutingTablePacket(route_table);
+            int packetSize = count * sizeof(RoutingTableService::route_entry_t);
+            DataPacket *dPacket = PacketService::createDataPacket(ADDR_WIFI, LoraMesher::getLocalAddress(), ROUTE_TABLE_P, reinterpret_cast<uint8_t *>(route_table), packetSize);
+            dPacket->via = ADDR_WIFI; // Set via to the WiFi address
+            wifi.sendPacketToServer(reinterpret_cast<uint8_t*>(dPacket), sizeof(DataPacket) + packetSize);
+            SAFE_ESP_LOGI("routeUpload", "Upload routing table packet with %d routes.", count);
+        }
+        // else if(fourg.isFourGConnected() == true)
+        // {
+
+        // }
+        vTaskDelay(pdMS_TO_TICKS(ROUTING_TABLE_UPDATE_DELAY * 1000));
+    }
 }

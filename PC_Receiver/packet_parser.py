@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 
 # ========= 常量定义 ========= #
-DATA_P = 0b00000010  # 只处理这一类包
-
+DATA_P = 0b00000010
+ROUTE_TABLE_P = 0b00000110
 
 # ========= 结构体定义 ========= #
 
@@ -13,28 +13,29 @@ class PacketHeader:
     dst: int
     src: int
     type: int
-    id: int
     packetSize: int
-
 
 @dataclass
 class RouteDataPacket:
     via: int
 
-
 @dataclass
 class TestData:
     sequenceNumber: int
-    timestamp: int
-    nodeId: int
     testType: int
     payload: bytes
 
+@dataclass
+class RouteEntry:
+    address: int
+    via: int
+    metric: int
+    role: int
 
 # ========= 解包函数 ========= #
 
 def parse_packet_header(data: bytes, offset=0) -> tuple[PacketHeader, int]:
-    fmt = "<HHBBB"
+    fmt = "<HHBB"
     size = struct.calcsize(fmt)
     if len(data) < offset + size:
         raise ValueError("数据不足以解包 PacketHeader")
@@ -43,7 +44,7 @@ def parse_packet_header(data: bytes, offset=0) -> tuple[PacketHeader, int]:
 
 
 def parse_route_data_packet(data: bytes, offset=0) -> tuple[RouteDataPacket, int]:
-    fmt = "<H"
+    fmt = "<H"  # uint16_t -> 2字节
     size = struct.calcsize(fmt)
     if len(data) < offset + size:
         raise ValueError("数据不足以解包 RouteDataPacket")
@@ -51,40 +52,74 @@ def parse_route_data_packet(data: bytes, offset=0) -> tuple[RouteDataPacket, int
     return RouteDataPacket(via), offset + size
 
 
-def parse_test_data(data: bytes, offset=0) -> tuple[TestData, int]:
-    fmt = "<IIHB32s"
+def parse_test_data(data: bytes, offset: int, payload_len: int) -> tuple[TestData, int]:
+    header_fmt = "<IB"
+    header_size = struct.calcsize(header_fmt)  # 5字节
+
+    if payload_len < header_size:
+        raise ValueError("payload长度不足以解包TestData头部")
+
+    seq, testType = struct.unpack_from(header_fmt, data, offset)
+    offset += header_size
+
+    payload = data[offset : offset + (payload_len - header_size)]
+    offset += len(payload)
+
+    return TestData(seq, testType, payload), offset
+
+
+def parse_route_entry(data: bytes, offset=0) -> tuple[RouteEntry, int]:
+    fmt = "<HHBB"
     size = struct.calcsize(fmt)
     if len(data) < offset + size:
-        raise ValueError("数据不足以解包 TestData")
+        raise ValueError("数据不足以解包 RouteEntry")
     values = struct.unpack_from(fmt, data, offset)
-    return TestData(*values), offset + size
+    return RouteEntry(*values), offset + size
 
+# ========= 主入口 ========= #
 
-# ========= 总解析入口 ========= #
-
-def parse_data_packet(data: bytes) -> dict:
+def parse_packet(data: bytes) -> dict:
     offset = 0
-
-    # 1. PacketHeader
     header, offset = parse_packet_header(data, offset)
-    if header.type != DATA_P:
-        raise ValueError(f"不是数据包类型：{header.type}")
-
-    # 2. RouteDataPacket
     route_data, offset = parse_route_data_packet(data, offset)
 
-    # 3. TestData Payload
-    test_data, offset = parse_test_data(data, offset)
-
-    return {
+    result = {
         "header": header,
-        "route": route_data,
-        "test_data": test_data,
+        "via": route_data.via,  # 新增这一行
+        "type": None,
+        "payload": None
     }
 
+    total_packet_len = header.packetSize  # 整包长度（包含头）
+    header_len = offset  # 已经读取的头部长度，6字节
+    payload_len = total_packet_len - header_len
 
-# ========= 测试接口 ========= #
-if __name__ == "__main__":
-    raw = b'\xfd\xff<6\x02\x02\x35\xfd\xff\x00\x00\x00\x00\x996\x00\x00<6\x01\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x00'
-    result = parse_data_packet(raw)
-    print(result)
+    if len(data) < total_packet_len:
+        raise ValueError(f"数据长度不足，期望{total_packet_len}字节，实际{len(data)}字节")
+
+    if header.type == DATA_P:
+        test_data, new_offset = parse_test_data(data, offset, payload_len)
+        result["type"] = "test_data"
+        result["payload"] = test_data
+        offset = new_offset
+
+    elif header.type == ROUTE_TABLE_P:
+        route_entries = []
+        entry_size = struct.calcsize("<HHBB")
+        if payload_len % entry_size != 0:
+            raise ValueError("路由表长度不是entry_size的整数倍")
+        num_entries = payload_len // entry_size
+
+        for _ in range(num_entries):
+            entry, offset = parse_route_entry(data, offset)
+            route_entries.append(entry)
+
+        result["type"] = "route_table"
+        result["payload"] = route_entries
+
+    else:
+        raise ValueError(f"未知数据包类型: {header.type}")
+
+    return result
+
+

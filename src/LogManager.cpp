@@ -46,13 +46,16 @@ void LogManager::start() {
         "Log Manager Task",  
         4096,  
         nullptr,  
-        7,  
+        0, 
         &logTaskHandle);  
           
-    if (res != pdPASS) {  
-        SAFE_ESP_LOGE("LogManager", "Failed to create log task: %d", res);  
-    } else {  
-        ESP_LOGI("LogManager", "Log Manager Task started");  
+    if (res != pdPASS) 
+    {  
+        SAFE_ESP_LOGE("LogManager", "Failed to create log task: %d!", res);  
+    } 
+    else 
+    {  
+        SAFE_ESP_LOGI("LogManager", "Log Manager Task started.");  
     }  
 }  
   

@@ -77,13 +77,14 @@ extern const char* LM_VERSION;
 #define LM_MAX_PACKET_SIZE 100
 
 // Packet types
-#define NEED_ACK_P 0b00000011
-#define DATA_P     0b00000010
-#define HELLO_P    0b00000100
-#define ACK_P      0b00001010
-#define XL_DATA_P  0b00010010
-#define LOST_P     0b00100010
-#define SYNC_P     0b01000010
+#define NEED_ACK_P      0b00000011
+#define DATA_P          0b00000010
+#define HELLO_P         0b00000100
+#define ACK_P           0b00001010
+#define XL_DATA_P       0b00010010
+#define LOST_P          0b00100010
+#define SYNC_P          0b01000010
+#define ROUTE_TABLE_P   0b00000110
 
 // Packet configuration
 typedef enum {
@@ -96,9 +97,10 @@ typedef enum {
 #define MAX_PRIORITY 40
 
 //Definition Times in seconds
-#define TEST_DATA_INTERVAL 2  // 测试数据生成间隔（秒）
+#define TEST_DATA_DELAY 2  // 测试数据生成间隔（秒）
+#define ROUTING_TABLE_UPDATE_DELAY 2 // 路由表更新间隔（秒）
 #define HELLO_PACKETS_DELAY 5 // Hello包生成间隔
-#define DEFAULT_TIMEOUT HELLO_PACKETS_DELAY*5
+#define DEFAULT_TIMEOUT HELLO_PACKETS_DELAY*3
 #define MIN_TIMEOUT 20
 
 //Maximum times that a sequence of packets reach the timeout
@@ -117,11 +119,11 @@ typedef enum {
 #define WIFINAME "XDZY-1"
 #define PASSWORD "xidianzy"
 
-#define UDP_SERVER_IP   "192.168.33.26"  // 电脑的局域网 IP
+#define UDP_SERVER_IP   "192.168.33.35"  // 电脑的局域网 IP
 #define UDP_SERVER_PORT 8080             // 上位机监听的端口
 
 //Switches
-#define LM_ENABLE_WIFI_SERVICE
+//#define LM_ENABLE_WIFI_SERVICE
 #define LM_ENABLE_TESTDATA_SERVICE
 
 #endif

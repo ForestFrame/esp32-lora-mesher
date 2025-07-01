@@ -38,7 +38,7 @@ public:
         // Determine actual packet size, respecting maximum limits
         size_t actualPacketSize = requestedPacketSize;
         if (actualPacketSize > maxPacketSize) {
-            SAFE_ESP_LOGW(LM_TAG, "Packet size (%u) exceeds maximum (%u bytes), truncating",
+            SAFE_ESP_LOGW(LM_TAG, "Packet size (%u) exceeds maximum (%u bytes), truncating!",
                 requestedPacketSize, maxPacketSize);
             actualPacketSize = maxPacketSize;
         }
@@ -61,7 +61,7 @@ public:
         if (payload != nullptr && copySize > 0) {
             // Log warning if payload was truncated
             if (payloadSize > copySize) {
-                SAFE_ESP_LOGW(LM_TAG, "Payload truncated from %u to %u bytes to fit max packet size",
+                SAFE_ESP_LOGW(LM_TAG, "Payload truncated from %u to %u bytes to fit max packet size!",
                     payloadSize, copySize);
             }
 

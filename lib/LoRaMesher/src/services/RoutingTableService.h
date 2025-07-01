@@ -23,46 +23,58 @@
  * @brief Routing Table Service
  *
  */
-class RoutingTableService {
+class RoutingTableService
+{
 public:
-
-	static special_addr_e decideHowToSendData(void) 
+	typedef struct __attribute__((packed))
 	{
-	    uint8_t myRole = RoleService::getRole();
-	    WiFiTransmitter& wifi = WiFiTransmitter::getInstance();
+		uint16_t address;
+		uint16_t via;
+		uint8_t metric;
+		uint8_t role;
+	} route_entry_t;
 
-	    // 1. 如果自己是CLIENT
-	    if (myRole & ROLE_CLIENT) {
-	    	return ADDR_WIFI;
-	    }
+	static special_addr_e decideHowToSendData(void)
+	{
+		uint8_t myRole = RoleService::getRole();
+		WiFiTransmitter &wifi = WiFiTransmitter::getInstance();
 
-	    // 2. 路由表有CLIENT
-	    RouteNode* bestClient = getBestNodeByRole(ROLE_CLIENT);
-	    if (bestClient != nullptr) {
-	    	return static_cast<special_addr_e>(bestClient->networkNode.address);
-	    }
+		// 1. 如果自己是CLIENT
+		if (myRole & ROLE_CLIENT)
+		{
+			return ADDR_WIFI;
+		}
 
-	    // 3. 没有CLIENT，自己是GATEWAY（4G）
-	    if (myRole & ROLE_GATEWAY) {
-	    	return ADDR_4G;
-	    }
+		// 2. 路由表有CLIENT
+		RouteNode *bestClient = getBestNodeByRole(ROLE_CLIENT);
+		if (bestClient != nullptr)
+		{
+			return static_cast<special_addr_e>(bestClient->networkNode.address);
+		}
 
-	    // 4. 路由表有GATEWAY（4G）
-	    RouteNode* bestGateway = getBestNodeByRole(ROLE_GATEWAY);
-	    if (bestGateway != nullptr) {
-	    	return static_cast<special_addr_e>(bestGateway->networkNode.address);
-	    }
+		// 3. 没有CLIENT，自己是GATEWAY（4G）
+		if (myRole & ROLE_GATEWAY)
+		{
+			return ADDR_4G;
+		}
 
-	    // 5. 都没有
-	    SAFE_ESP_LOGW("RoutingTableService", "No routing found!");
-	    return NO_DESTNATION;
+		// 4. 路由表有GATEWAY（4G）
+		RouteNode *bestGateway = getBestNodeByRole(ROLE_GATEWAY);
+		if (bestGateway != nullptr)
+		{
+			return static_cast<special_addr_e>(bestGateway->networkNode.address);
+		}
+
+		// 5. 都没有
+		SAFE_ESP_LOGW("RoutingTableService", "No routing found!");
+		return NO_DESTNATION;
 	}
 
 	/**
 	 * @brief Routing table List
 	 *
 	 */
-	static LM_LinkedList<RouteNode>* routingTableList;
+	static LM_LinkedList<RouteNode> *routingTableList;
 
 	/**
 	 * @brief Prints the actual routing table in the log
@@ -75,7 +87,7 @@ public:
 	 *
 	 * @return NetworkNode* All the nodes in a list.
 	 */
-	static NetworkNode* getAllNetworkNodes();
+	static NetworkNode *getAllNetworkNodes();
 
 	/**
 	 * @brief Find the node that contains the address
@@ -83,7 +95,7 @@ public:
 	 * @param address address to be found
 	 * @return RouteNode* pointer to the RouteNode or nullptr
 	 */
-	static RouteNode* findNode(uint16_t address);
+	static RouteNode *findNode(uint16_t address);
 
 	/**
 	 * @brief Get the best node that contains a role, the nearest
@@ -91,7 +103,7 @@ public:
 	 * @param role role to be found
 	 * @return RouteNode* pointer to the RouteNode or nullptr
 	 */
-	static RouteNode* getBestNodeByRole(uint8_t role);
+	static RouteNode *getBestNodeByRole(uint8_t role);
 
 	/**
 	 * @brief Returns if address is inside the routing table
@@ -131,13 +143,13 @@ public:
 	 * @param p Route Packet
 	 */
 
-	 /**
-	  * @brief Process the network packet
-	  *
-	  * @param p Route Packet
-	  * @param receivedSNR Received SNR
-	  */
-	static void processRoute(RoutePacket* p, int8_t receivedSNR);
+	/**
+	 * @brief Process the network packet
+	 *
+	 * @param p Route Packet
+	 * @param receivedSNR Received SNR
+	 */
+	static void processRoute(RoutePacket *p, int8_t receivedSNR);
 
 	/**
 	 * @brief Reset the SNR from the Route Node received
@@ -161,15 +173,21 @@ public:
 	 */
 	static void manageTimeoutRoutingTable();
 
-private:
+	/**
+	 * @brief Create a Routing Table Packet
+	 *
+	 * @return int Returns the size of the packet created
+	 */
+	static int createRoutingTablePacket(route_entry_t *routeTable);
 
+private:
 	/**
 	 * @brief process the network node, adds the node in the routing table if can
 	 *
 	 * @param via via address
 	 * @param node NetworkNode
 	 */
-	static void processRoute(uint16_t via, NetworkNode* node);
+	static void processRoute(uint16_t via, NetworkNode *node);
 
 	/**
 	 * @brief process the network node, adds the node in the routing table if can
@@ -178,14 +196,14 @@ private:
 	 * @param via via address
 	 * @param node NetworkNode
 	 */
-	static void processRoute(RouteNode* rNode, uint16_t via, NetworkNode* node);
+	static void processRoute(RouteNode *rNode, uint16_t via, NetworkNode *node);
 
 	/**
 	 * @brief Reset the timeout of the given node
 	 *
 	 * @param node node to be reset the timeout
 	 */
-	static void resetTimeoutRoutingNode(RouteNode* node);
+	static void resetTimeoutRoutingNode(RouteNode *node);
 
 	/**
 	 * @brief Add node to the routing table
@@ -194,13 +212,13 @@ private:
 	 * @param via Address to next hop to reach the network node address
 	 */
 
-	 /**
-	  * @brief Add node to the routing table
-	  *
-	  * @param node Network node that includes the address and the metric
-	  * @param via Address to next hop to reach the network node address
-	  */
-	static void addNodeToRoutingTable(NetworkNode* node, uint16_t via);
+	/**
+	 * @brief Add node to the routing table
+	 *
+	 * @param node Network node that includes the address and the metric
+	 * @param via Address to next hop to reach the network node address
+	 */
+	static void addNodeToRoutingTable(NetworkNode *node, uint16_t via);
 
 	/**
 	 * @brief Get the Maximum Metric Of Routing Table. To prevent that some new entries are not added to the routing table.

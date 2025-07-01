@@ -32,7 +32,7 @@ void WiFiTransmitter::begin(const char* ssid, const char* password) {
     }
 }
 
-bool WiFiTransmitter::isWiFiConnected() const {
+bool WiFiTransmitter::isWiFiConnected() {
     return isConnected && WiFi.status() == WL_CONNECTED;
 }
 

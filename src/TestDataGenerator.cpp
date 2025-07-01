@@ -72,7 +72,7 @@ void TestDataGenerator::testDataGenerationTask() {
         generateTestPacket();  
           
         // 等待下一次生成  
-        vTaskDelay(TEST_DATA_INTERVAL * 1000 / portTICK_PERIOD_MS);  
+        vTaskDelay(TEST_DATA_DELAY * 1000 / portTICK_PERIOD_MS);  
     }  
 }  
   
@@ -82,8 +82,6 @@ void TestDataGenerator::generateTestPacket() {
     // 创建测试数据结构  
     TestData testData;  
     testData.sequenceNumber = testPacketCounter++;  
-    testData.timestamp = millis();  
-    testData.nodeId = radio.getLocalAddress();  
     testData.testType = 0x01; // 测试数据类型标识  
       
     // 填充测试负载  
@@ -91,8 +89,8 @@ void TestDataGenerator::generateTestPacket() {
         testData.payload[i] = (uint8_t)(testData.sequenceNumber + i) & 0xFF;  
     }  
       
-    SAFE_ESP_LOGV("testDataGenerator", "Generating test packet #%d from node %X.",   
-             testData.sequenceNumber, testData.nodeId);  
+    SAFE_ESP_LOGD("testDataGenerator", "Generating test packet #%d with %d bytes.",   
+             testData.sequenceNumber, sizeof(testData));  
 
 	radio.createPacketAndSend(ADDR_BROADCAST, &testData, 1);
 }

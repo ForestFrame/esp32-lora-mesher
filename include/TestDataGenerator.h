@@ -14,10 +14,8 @@ public:
     // 测试数据结构
     struct TestData {
         uint32_t sequenceNumber;
-        uint32_t timestamp;
-        uint16_t nodeId;
         uint8_t testType;
-        uint8_t payload[32]; // 测试负载
+        uint8_t payload[35]; // 测试负载
     };
 
     static TestDataGenerator& getInstance();

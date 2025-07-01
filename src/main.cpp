@@ -99,7 +99,7 @@ void WiFiStatus(void)
 		wifi.begin(WIFINAME, PASSWORD);
 	}
 	else
-	{
+	{   
 		RoleService::setRole(ROLE_CLIENT);
 	}
 #endif

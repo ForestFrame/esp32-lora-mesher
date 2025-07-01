@@ -131,19 +131,19 @@ public:
      *
      *   Then for receiving app packets:
      * @code
-     *   TaskHandle_t receiveLoRaMessage_Handle = NULL;
+     *   TaskHandle_t receiveLoRaMessage_TaskHandle = NULL;
      *   int res = xTaskCreate(
      *       processReceivedPackets,
      *       "Receive User routine",
      *       4096,
      *       (void*) 1,
      *       2,
-     *       &receiveLoRaMessage_Handle);
+     *       &receiveLoRaMessage_TaskHandle);
      *   if (res != pdPASS) {
      *       SAFE_ESP_LOGE(LM_TAG, "Receive User Task creation gave error: %d", res);
      *   }
      *
-     *   radio.setReceiveAppDataTaskHandle(receiveLoRaMessage_Handle);
+     *   radio.setReceiveAppDataTaskHandle(receiveLoRaMessage_TaskHandle);
      *
      * @endcode
      *
@@ -565,7 +565,13 @@ private:
      * @brief Receive LoRa Message Task Handle
      *
      */
-    TaskHandle_t receiveLoRaMessage_Handle = NULL;
+    TaskHandle_t receiveLoRaMessage_TaskHandle = nullptr;
+
+    /**
+     * @brief Route Upload Task Handle
+     *
+     */
+    TaskHandle_t routeUpload_TaskHandle = nullptr;
 
     void initConfiguration();
 
@@ -1108,6 +1114,7 @@ public:
 
     void processReceivedPackets(void);
     void createUploadDataPacket(AppPacket<DataPacket> *packet);
+    void routeUpload(void);
 };
 
 #endif
