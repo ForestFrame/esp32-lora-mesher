@@ -116,14 +116,14 @@ typedef enum {
 #define ROLE_TERMINAL 0b00001000
 
 //WiFi Para
-#define WIFINAME "XDZY-1"
-#define PASSWORD "xidianzy"
+#define WIFINAME "ForestFrame-Hotspot"
+#define PASSWORD "12345678"
 
-#define UDP_SERVER_IP   "192.168.33.35"  // 电脑的局域网 IP
-#define UDP_SERVER_PORT 8080             // 上位机监听的端口
+#define UDP_SERVER_IP   "192.168.100.40"  // 电脑的局域网 IP
+#define UDP_SERVER_PORT 8080              // 上位机监听的端口
 
 //Switches
-//#define LM_ENABLE_WIFI_SERVICE
+#define LM_ENABLE_WIFI_SERVICE
 #define LM_ENABLE_TESTDATA_SERVICE
 
 #endif

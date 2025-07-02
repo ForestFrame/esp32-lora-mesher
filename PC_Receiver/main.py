@@ -20,6 +20,7 @@ def udp_receiver(dashboard):
             print(f"解析失败: {e}")
 
 if __name__ == "__main__":
+
     dashboard = PacketDashboard()
 
     recv_thread = threading.Thread(target=udp_receiver, args=(dashboard,), daemon=True)
